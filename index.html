@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PONG // NEON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="crt-overlay" aria-hidden="true"></div>
+
+<div class="app">
+
+  <!-- ===== ЭКРАН АВТОРИЗАЦИИ ===== -->
+  <section id="screen-auth" class="screen screen--active">
+    <div class="marquee">
+      <h1 class="title glow-blend">PONG<span class="slash">//</span>NEON</h1>
+      <p class="subtitle">insert coin to continue</p>
+    </div>
+
+    <form id="auth-form" class="panel panel--pink">
+      <label class="field">
+        <span class="field__label">Никнейм</span>
+        <input id="input-nickname" type="text" maxlength="16" placeholder="NEO_PLAYER" required autocomplete="off" />
+      </label>
+      <label class="field">
+        <span class="field__label">Логин</span>
+        <input id="input-login" type="text" maxlength="20" placeholder="player_01" required autocomplete="off" />
+      </label>
+      <button type="submit" class="btn btn--pink">Войти в аркаду</button>
+      <p id="auth-error" class="error-text"></p>
+    </form>
+  </section>
+
+  <!-- ===== ГЛАВНОЕ МЕНЮ ===== -->
+  <section id="screen-menu" class="screen">
+    <h1 class="title title--sm glow-blend">PONG<span class="slash">//</span>NEON</h1>
+    <p class="subtitle">Игрок: <span id="menu-player-name" class="highlight">-</span></p>
+
+    <div class="menu-grid">
+      <button id="btn-play-bot" class="btn btn--blue btn--lg">
+        <span class="btn__icon">◆</span> Против бота
+      </button>
+      <button id="btn-play-pvp" class="btn btn--pink btn--lg">
+        <span class="btn__icon">◆</span> Мультиплеер (PvP)
+      </button>
+      <button id="btn-leaderboard" class="btn btn--ghost btn--lg">
+        <span class="btn__icon">☰</span> Таблица лидеров
+      </button>
+      <button id="btn-logout" class="btn btn--ghost btn--sm">Выйти</button>
+    </div>
+
+    <p id="connection-status" class="status-text">Подключение к серверу…</p>
+  </section>
+
+  <!-- ===== ЭКРАН ИГРЫ ===== -->
+  <section id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud__player hud__player--blue">
+        <span class="hud__label" id="hud-name-left">ИГРОК</span>
+        <span class="hud__score" id="hud-score-left">0</span>
+      </div>
+      <div class="hud__mode" id="hud-mode">VS BOT</div>
+      <div class="hud__player hud__player--pink">
+        <span class="hud__score" id="hud-score-right">0</span>
+        <span class="hud__label" id="hud-name-right">БОТ</span>
+      </div>
+    </div>
+
+    <div class="cabinet">
+      <canvas id="game-canvas" width="900" height="540"></canvas>
+
+      <div id="overlay-waiting" class="overlay hidden">
+        <p class="overlay__title">Поиск соперника<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+        <button id="btn-cancel-search" class="btn btn--ghost btn--sm">Отмена</button>
+      </div>
+
+      <div id="overlay-result" class="overlay hidden">
+        <p class="overlay__title" id="overlay-result-text">ПОБЕДА</p>
+        <div class="overlay__actions">
+          <button id="btn-rematch" class="btn btn--blue btn--sm">Играть снова</button>
+          <button id="btn-to-menu" class="btn btn--ghost btn--sm">В меню</button>
+        </div>
+      </div>
+
+      <div id="overlay-countdown" class="overlay hidden">
+        <p class="overlay__countdown" id="overlay-countdown-text">3</p>
+      </div>
+    </div>
+
+    <p class="hint">Двигай мышью вверх / вниз над полем, чтобы управлять своей ракеткой</p>
+  </section>
+
+  <!-- ===== ТАБЛИЦА ЛИДЕРОВ ===== -->
+  <section id="screen-leaderboard" class="screen">
+    <h2 class="title title--sm glow-blend">ТАБЛИЦА<span class="slash">//</span>ЛИДЕРОВ</h2>
+
+    <div class="panel panel--blue leaderboard-panel">
+      <table class="leaderboard-table">
+        <thead>
+          <tr><th>#</th><th>Игрок</th><th>Победы</th><th>Поражения</th></tr>
+        </thead>
+        <tbody id="leaderboard-body">
+          <tr><td colspan="4" class="muted">Загрузка…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button id="btn-leaderboard-back" class="btn btn--ghost btn--sm">Назад в меню</button>
+  </section>
+
+</div>
+
+<script type="module" src="js/supabaseClient.js"></script>
+<script type="module" src="js/leaderboard.js"></script>
+<script type="module" src="js/matchmaking.js"></script>
+<script type="module" src="js/game.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
