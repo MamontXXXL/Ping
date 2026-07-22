@@ -90,9 +90,14 @@
       <div id="overlay-countdown" class="overlay hidden">
         <p class="overlay__countdown" id="overlay-countdown-text">3</p>
       </div>
+
+      <div id="overlay-lock" class="overlay hidden overlay--lock">
+        <p class="overlay__title">🔒 Кликни, чтобы захватить курсор</p>
+        <p class="overlay__hint">Пока курсор не захвачен, ракетка не двигается</p>
+      </div>
     </div>
 
-    <p class="hint">Двигай мышью вверх / вниз над полем, чтобы управлять своей ракеткой</p>
+    <p class="hint" id="game-hint">Кликни по полю, чтобы захватить курсор — двигай мышью вверх/вниз. <span class="key-hint">E</span> — отпустить курсор</p>
   </section>
 
   <!-- ===== ТАБЛИЦА ЛИДЕРОВ ===== -->
