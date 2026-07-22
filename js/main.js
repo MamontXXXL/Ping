@@ -24,6 +24,8 @@ const btnLogout = document.getElementById('btn-logout');
 const btnLeaderboardBack = document.getElementById('btn-leaderboard-back');
 
 const canvas = document.getElementById('game-canvas');
+const cabinet = document.querySelector('.cabinet');
+const hintEl = document.getElementById('game-hint');
 const hudNameLeft = document.getElementById('hud-name-left');
 const hudNameRight = document.getElementById('hud-name-right');
 const hudScoreLeft = document.getElementById('hud-score-left');
@@ -38,6 +40,7 @@ const btnRematch = document.getElementById('btn-rematch');
 const btnToMenu = document.getElementById('btn-to-menu');
 const overlayCountdown = document.getElementById('overlay-countdown');
 const overlayCountdownText = document.getElementById('overlay-countdown-text');
+const overlayLock = document.getElementById('overlay-lock');
 
 const leaderboardBody = document.getElementById('leaderboard-body');
 
@@ -50,6 +53,18 @@ let netChannel = null;
 let currentMatch = null; // { roomId, isHost, opponentNickname }
 const NET_SEND_INTERVAL = 1000 / 25; // 25 сообщений/сек
 let lastNetSend = 0;
+
+// ---------- Pointer Lock (захват курсора) ----------
+const DEFAULT_HINT = 'Кликни по полю, чтобы захватить курсор — двигай мышью вверх/вниз. E — отпустить курсор';
+const LOCKED_HINT = 'Курсор захвачен — двигай мышью вверх/вниз. E — отпустить курсор';
+let capturedY = FIELD_H / 2; // виртуальная Y-позиция ракетки при захваченном курсоре
+let awaitingFirstLock = false; // ждём первого клика/захвата перед стартом раунда
+
+function isPointerLocked() {
+  return document.pointerLockElement === canvas;
+}
+
+if (hintEl) hintEl.textContent = DEFAULT_HINT;
 
 function showScreen(name) {
   Object.values(screens).forEach((el) => el.classList.remove('screen--active'));
@@ -166,6 +181,7 @@ function startGame({ mode }) {
   showScreen('game');
   overlayResult.classList.add('hidden');
   overlayWaiting.classList.add('hidden');
+  overlayCountdown.classList.add('hidden');
 
   if (!game) {
     game = new PongGame(canvas);
@@ -173,6 +189,8 @@ function startGame({ mode }) {
     game.restart();
   }
   game.setMode(mode);
+  capturedY = FIELD_H / 2;
+  game.setLocalMouseY(capturedY);
 
   if (mode === 'bot') {
     hudMode.textContent = 'VS BOT';
@@ -189,6 +207,18 @@ function startGame({ mode }) {
     onMatchEnd(winnerSide);
   };
 
+  // Раунд стартует только после захвата курсора игроком (клик по полю).
+  if (isPointerLocked()) {
+    // Курсор уже захвачен с прошлого раунда (например, реванш) — стартуем сразу.
+    overlayLock.classList.add('hidden');
+    beginRound();
+  } else {
+    awaitingFirstLock = true;
+    overlayLock.classList.remove('hidden');
+  }
+}
+
+function beginRound() {
   runCountdown(3, () => {
     lastTs = performance.now();
     if (animationHandle) cancelAnimationFrame(animationHandle);
@@ -236,13 +266,52 @@ function loop(ts) {
   game.render();
 }
 
-// Мышь -> ракетка
+// ---------- Захват курсора (Pointer Lock API) ----------
+// Клик по игровому полю захватывает курсор — он становится невидимым
+// и не покидает окно; движение мыши после этого читается по movementY.
+cabinet.addEventListener('click', () => {
+  if (!isPointerLocked() && canvas.requestPointerLock) {
+    canvas.requestPointerLock();
+  }
+});
+
+document.addEventListener('pointerlockchange', () => {
+  if (isPointerLocked()) {
+    overlayLock.classList.add('hidden');
+    if (hintEl) hintEl.textContent = LOCKED_HINT;
+    if (awaitingFirstLock) {
+      awaitingFirstLock = false;
+      beginRound();
+    }
+  } else {
+    if (hintEl) hintEl.textContent = DEFAULT_HINT;
+  }
+});
+
+// Клавиша E — отпустить захваченный курсор.
+document.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'e' && isPointerLocked()) {
+    document.exitPointerLock();
+  }
+});
+
+// Мышь -> ракетка. Пока курсор захвачен — двигаем по относительному
+// смещению (movementY); иначе — по абсолютной позиции над canvas
+// (запасной вариант для устройств без Pointer Lock).
 canvas.addEventListener('mousemove', (e) => {
   if (!game) return;
   const rect = canvas.getBoundingClientRect();
   const scaleY = FIELD_H / rect.height;
-  const y = (e.clientY - rect.top) * scaleY;
-  game.setLocalMouseY(y);
+
+  if (isPointerLocked()) {
+    capturedY += e.movementY * scaleY;
+    capturedY = Math.max(0, Math.min(FIELD_H, capturedY));
+    game.setLocalMouseY(capturedY);
+  } else {
+    const y = (e.clientY - rect.top) * scaleY;
+    capturedY = y; // держим в синхроне, чтобы при захвате не было "прыжка"
+    game.setLocalMouseY(y);
+  }
 });
 
 // ---------- Конец матча ----------
