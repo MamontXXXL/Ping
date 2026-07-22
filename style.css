@@ -217,6 +217,31 @@ input[type="text"]:focus {
 
 .hint { color: var(--text-dim); font-size: 13px; letter-spacing: 0.5px; }
 
+.key-hint {
+  display: inline-block;
+  min-width: 20px;
+  padding: 1px 7px;
+  margin: 0 2px;
+  border-radius: 5px;
+  border: 1px solid var(--neon-blue);
+  color: var(--neon-blue);
+  text-shadow: 0 0 6px var(--neon-blue);
+  font-family: var(--font-display);
+  font-size: 11px;
+  vertical-align: 1px;
+}
+
+.overlay--lock {
+  cursor: pointer;
+  background: rgba(4,6,13,0.72);
+}
+.overlay__hint {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
 /* ---------- Overlays ---------- */
 .overlay {
   position: absolute;
